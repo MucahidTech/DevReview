@@ -26,5 +26,8 @@ export default defineConfig({
         statements: 70,
       },
     },
+    alias: {
+      "server-only": "/vitest.stubs/server-only.ts",
+    },
   },
 });
