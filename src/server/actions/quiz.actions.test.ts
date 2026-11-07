@@ -1,22 +1,17 @@
 import { fetchQuizQuestions, fetchCategories, fetchQuestionById } from "./quiz.actions";
 
 vi.mock("@/lib/prisma", () => ({
-  default: {},
+  default: {
+    question: {
+      findMany: vi.fn().mockResolvedValue([]),
+      findUnique: vi.fn().mockResolvedValue(null),
+      count: vi.fn().mockResolvedValue(0),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+    },
+  },
 }));
-
-// const mockQuestion = (overrides: Record<string, unknown> = {}) => ({
-//   id: "507f1f77bcf86cd799439011",
-//   text: "What is typeof null?",
-//   codeSnippet: null,
-//   options: ['"null"', '"object"', '"undefined"', '"boolean"'],
-//   correctAnswer: 1,
-//   explanation: "typeof null returns object due to a historical bug.",
-//   category: "JS Quirks",
-//   difficulty: "easy",
-//   createdAt: new Date(),
-//   updatedAt: new Date(),
-//   ...overrides,
-// });
 
 describe("fetchQuizQuestions", () => {
   beforeEach(() => {
