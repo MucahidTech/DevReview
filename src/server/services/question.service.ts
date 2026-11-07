@@ -1,5 +1,6 @@
 import "server-only";
 import type { PrismaClient, Question } from "@prisma/client";
+import { shuffle } from "@/lib/quiz/shuffle";
 
 export interface CreateQuestionData {
   text: string;
@@ -43,7 +44,7 @@ export class QuestionService {
     const where = category ? { category } : undefined;
     const all = await this.prisma.question.findMany({ where });
 
-    const shuffled = [...all].sort(() => Math.random() - 0.5);
+    const shuffled = shuffle(all);
     return shuffled.slice(0, Math.min(count, shuffled.length));
   }
 
