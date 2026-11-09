@@ -20,9 +20,10 @@ interface QuestionCardProps {
     difficulty: string;
   };
   highlightedCodeHtml?: string;
+  onAnswer?: (selectedIndex: number) => void;
 }
 
-export function QuestionCard({ question, highlightedCodeHtml }: QuestionCardProps) {
+export function QuestionCard({ question, highlightedCodeHtml, onAnswer }: QuestionCardProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [hasAnswered, setHasAnswered] = useState(false);
 
@@ -33,6 +34,7 @@ export function QuestionCard({ question, highlightedCodeHtml }: QuestionCardProp
     const index = Number(value);
     setSelectedIndex(index);
     setHasAnswered(true);
+    onAnswer?.(index);
   };
 
   return (
@@ -52,7 +54,7 @@ export function QuestionCard({ question, highlightedCodeHtml }: QuestionCardProp
         )}
 
         <RadioGroup
-          value={selectedIndex !== null ? String(selectedIndex) : null}
+          value={selectedIndex !== null ? String(selectedIndex) : undefined}
           onValueChange={handleSelect}
           disabled={hasAnswered}
           className="flex flex-col gap-2"
