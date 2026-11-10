@@ -1,12 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { QuestionCard } from "./question-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { calculateScore } from "@/lib/quiz/scoring";
 import type { QuizAnswer } from "@/lib/quiz/types";
+import { useLocalStorage } from "@/hooks/use-local-storage";
+import {
+  HIGH_SCORES_KEY,
+  LAST_RESULT_KEY,
+  getScoreKey,
+  updateHighScore,
+  type QuizHighScore,
+} from "@/lib/quiz/persistence";
 
 interface Question {
   id: string;
@@ -37,6 +45,14 @@ export function QuizClient({ questions, highlightedCodeMap }: QuizClientProps) {
   const [activeQuestions, setActiveQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<QuizAnswer[]>([]);
+  const answersRef = useRef<QuizAnswer[]>([]);
+
+  const [highScores, setHighScores] = useLocalStorage<Record<string, number>>(HIGH_SCORES_KEY, {});
+  const [lastResult, setLastResult] = useLocalStorage<QuizHighScore | null>(LAST_RESULT_KEY, null);
+
+  useEffect(() => {
+    answersRef.current = answers;
+  }, [answers]);
 
   const startQuiz = () => {
     const subset = questions.slice(0, Math.min(selectedCount, questions.length));
@@ -64,6 +80,13 @@ export function QuizClient({ questions, highlightedCodeMap }: QuizClientProps) {
     if (currentIndex + 1 < activeQuestions.length) {
       setCurrentIndex((i) => i + 1);
     } else {
+      const result = calculateScore(answersRef.current);
+      setLastResult({
+        category: getScoreKey(category),
+        percentage: result.percentage,
+        achievedAt: new Date().toISOString(),
+      });
+      setHighScores((prev) => updateHighScore(prev, category, result.percentage));
       setPhase("results");
     }
   };
@@ -75,6 +98,9 @@ export function QuizClient({ questions, highlightedCodeMap }: QuizClientProps) {
     setAnswers([]);
   };
 
+  const scoreKey = getScoreKey(category);
+  const bestScore = highScores[scoreKey] ?? 0;
+
   if (phase === "selecting") {
     return (
       <div className="container mx-auto max-w-2xl px-4 py-12">
@@ -83,6 +109,17 @@ export function QuizClient({ questions, highlightedCodeMap }: QuizClientProps) {
             <CardTitle>{category ? `Quiz: ${category}` : "Mixed Quiz"}</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-6">
+            {bestScore > 0 && (
+              <p className="text-sm text-muted-foreground">
+                Your best score: <span className="font-semibold text-foreground">{bestScore}%</span>
+              </p>
+            )}
+            {lastResult && (
+              <p className="text-sm text-muted-foreground">
+                Last attempt:{" "}
+                <span className="font-semibold text-foreground">{lastResult.percentage}%</span>
+              </p>
+            )}
             <div>
               <p className="mb-3 text-sm font-medium">Number of questions</p>
               <div className="flex gap-2">
@@ -164,6 +201,11 @@ export function QuizClient({ questions, highlightedCodeMap }: QuizClientProps) {
             <p className="mt-2 text-muted-foreground">
               {result.correct} correct out of {result.total}
             </p>
+            {bestScore > 0 && (
+              <p className="mt-2 text-sm text-muted-foreground">
+                Your best: <span className="font-semibold text-foreground">{bestScore}%</span>
+              </p>
+            )}
           </div>
           <Button size="lg" onClick={restart}>
             Try Again

@@ -58,7 +58,7 @@ describe("QuizClient", () => {
 
   it("shows results after the last question", async () => {
     const user = userEvent.setup();
-    render(<QuizClient questions={questions} highlightedCodeMap={{}} />);
+    const { container } = render(<QuizClient questions={questions} highlightedCodeMap={{}} />);
 
     await user.click(screen.getByRole("button", { name: /start quiz/i }));
     await user.click(screen.getByText("b"));
@@ -67,7 +67,9 @@ describe("QuizClient", () => {
     await user.click(screen.getByRole("button", { name: /see results/i }));
 
     expect(screen.getByText(/quiz complete/i)).toBeInTheDocument();
-    expect(screen.getByText("100%")).toBeInTheDocument();
+    const primaryResult = container.querySelector("p.text-5xl");
+    expect(primaryResult).toHaveTextContent("100%");
+    expect(screen.getByText(/2 correct out of 2/i)).toBeInTheDocument();
   });
 
   it("allows restarting after results", async () => {
