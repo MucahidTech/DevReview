@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QuizClient } from "./quiz-client";
+import { HIGH_SCORES_KEY } from "@/lib/quiz/persistence";
 
 vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
@@ -84,5 +85,20 @@ describe("QuizClient", () => {
     await user.click(screen.getByRole("button", { name: /try again/i }));
 
     expect(screen.getByRole("button", { name: /start quiz/i })).toBeInTheDocument();
+  });
+
+  it("persists the high score to localStorage after completing a quiz", async () => {
+    localStorage.clear();
+    const user = userEvent.setup();
+    render(<QuizClient questions={questions} highlightedCodeMap={{}} />);
+
+    await user.click(screen.getByRole("button", { name: /start quiz/i }));
+    await user.click(screen.getByText("b"));
+    await user.click(screen.getByRole("button", { name: /next question/i }));
+    await user.click(screen.getByText("a"));
+    await user.click(screen.getByRole("button", { name: /see results/i }));
+
+    const stored = JSON.parse(localStorage.getItem(HIGH_SCORES_KEY) ?? "{}");
+    expect(stored).toEqual({ mixed: 100 });
   });
 });
