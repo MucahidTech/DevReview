@@ -54,7 +54,7 @@ export function QuestionCard({ question, highlightedCodeHtml, onAnswer }: Questi
         )}
 
         <RadioGroup
-          value={selectedIndex !== null ? String(selectedIndex) : undefined}
+          value={selectedIndex !== null ? String(selectedIndex) : ""}
           onValueChange={handleSelect}
           disabled={hasAnswered}
           className="flex flex-col gap-2"
