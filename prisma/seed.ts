@@ -110,6 +110,19 @@ async function seedAdminUser(): Promise<void> {
   });
 
   console.log(`✅ Admin user seeded: ${DEFAULT_ADMIN_EMAIL}`);
+
+  await prisma.user.upsert({
+    where: { email: DEFAULT_ADMIN_EMAIL },
+    update: {},
+    create: {
+      email: DEFAULT_ADMIN_EMAIL,
+      name: "DevReview Admin",
+      passwordHash,
+      role: "admin",
+    },
+  });
+
+  console.log(`✅ Auth.js user seeded: ${DEFAULT_ADMIN_EMAIL}`);
 }
 
 async function seedQuestions(): Promise<void> {
