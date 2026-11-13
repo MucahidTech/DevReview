@@ -95,21 +95,8 @@ const questions = [
   },
 ];
 
-async function seedAdminUser(): Promise<void> {
+async function seedUser(): Promise<void> {
   const passwordHash = await bcrypt.hash(DEFAULT_ADMIN_PASSWORD, SALT_ROUNDS);
-
-  await prisma.adminUser.upsert({
-    where: { email: DEFAULT_ADMIN_EMAIL },
-    update: {},
-    create: {
-      email: DEFAULT_ADMIN_EMAIL,
-      name: "DevReview Admin",
-      passwordHash,
-      role: "admin",
-    },
-  });
-
-  console.log(`✅ Admin user seeded: ${DEFAULT_ADMIN_EMAIL}`);
 
   await prisma.user.upsert({
     where: { email: DEFAULT_ADMIN_EMAIL },
@@ -149,7 +136,7 @@ async function seedQuestions(): Promise<void> {
 async function main(): Promise<void> {
   console.log("🌱 Starting database seed...");
 
-  await seedAdminUser();
+  await seedUser();
   await seedQuestions();
 
   console.log("🎉 Seed completed successfully.");
