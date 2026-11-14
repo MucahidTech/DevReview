@@ -4,8 +4,20 @@ import bcrypt from "bcrypt";
 const prisma = new PrismaClient();
 
 const SALT_ROUNDS = 10;
-const DEFAULT_ADMIN_EMAIL = "admin@devreview.local";
-const DEFAULT_ADMIN_PASSWORD = "Admin123!";
+function getRequiredEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`❌ Missing required environment variable: ${name}`);
+  }
+  return value;
+}
+
+const ADMIN_EMAIL = getRequiredEnv("ADMIN_EMAIL");
+const ADMIN_PASSWORD = getRequiredEnv("ADMIN_PASSWORD");
+
+if (ADMIN_PASSWORD.length < 12) {
+  throw new Error("❌ ADMIN_PASSWORD must be at least 12 characters.");
+}
 
 const questions = [
   {
@@ -96,20 +108,20 @@ const questions = [
 ];
 
 async function seedUser(): Promise<void> {
-  const passwordHash = await bcrypt.hash(DEFAULT_ADMIN_PASSWORD, SALT_ROUNDS);
+  const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, SALT_ROUNDS);
 
   await prisma.user.upsert({
-    where: { email: DEFAULT_ADMIN_EMAIL },
+    where: { email: ADMIN_EMAIL },
     update: {},
     create: {
-      email: DEFAULT_ADMIN_EMAIL,
+      email: ADMIN_EMAIL,
       name: "DevReview Admin",
       passwordHash,
       role: "admin",
     },
   });
 
-  console.log(`✅ Auth.js user seeded: ${DEFAULT_ADMIN_EMAIL}`);
+  console.log(`✅ Auth.js user seeded`);
 }
 
 async function seedQuestions(): Promise<void> {
