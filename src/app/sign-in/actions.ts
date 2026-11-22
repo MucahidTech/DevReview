@@ -17,10 +17,11 @@ export interface SignInState {
   };
 }
 
-export async function signInAction(
-  _prevState: SignInState | undefined,
-  formData: FormData,
-): Promise<SignInState> {
+export type ParseSignInResult =
+  | { success: true; email: string; password: string; callbackUrl: string }
+  | { success: false; fieldErrors: NonNullable<SignInState["fieldErrors"]> };
+
+export function parseSignInForm(formData: FormData): ParseSignInResult {
   const raw = {
     email: formData.get("email"),
     password: formData.get("password"),
@@ -29,6 +30,7 @@ export async function signInAction(
   const parsed = signInSchema.safeParse(raw);
   if (!parsed.success) {
     return {
+      success: false,
       fieldErrors: {
         email: parsed.error.flatten().fieldErrors.email,
         password: parsed.error.flatten().fieldErrors.password,
@@ -37,12 +39,28 @@ export async function signInAction(
   }
 
   const callbackUrl = (formData.get("callbackUrl") as string) || "/admin";
+  return {
+    success: true,
+    email: parsed.data.email,
+    password: parsed.data.password,
+    callbackUrl,
+  };
+}
+
+export async function signInAction(
+  _prevState: SignInState | undefined,
+  formData: FormData,
+): Promise<SignInState> {
+  const parsed = parseSignInForm(formData);
+  if (!parsed.success) {
+    return { fieldErrors: parsed.fieldErrors };
+  }
 
   try {
     await signIn("credentials", {
-      email: parsed.data.email,
-      password: parsed.data.password,
-      redirectTo: callbackUrl,
+      email: parsed.email,
+      password: parsed.password,
+      redirectTo: parsed.callbackUrl,
     });
     return {};
   } catch (error) {

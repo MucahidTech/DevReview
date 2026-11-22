@@ -1,20 +1,15 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
+import { decideRedirect } from "@/lib/auth/proxy-logic";
 
 export default auth((req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
-  const isOnAdmin = nextUrl.pathname.startsWith("/admin");
-  const isOnSignIn = nextUrl.pathname === "/sign-in";
 
-  if (isOnSignIn && isLoggedIn) {
-    return NextResponse.redirect(new URL("/admin", nextUrl));
-  }
+  const decision = decideRedirect(nextUrl.pathname, isLoggedIn, nextUrl.origin);
 
-  if (isOnAdmin && !isLoggedIn) {
-    const signInUrl = new URL("/sign-in", nextUrl);
-    signInUrl.searchParams.set("callbackUrl", nextUrl.pathname);
-    return NextResponse.redirect(signInUrl);
+  if (decision.redirect) {
+    return NextResponse.redirect(decision.redirect);
   }
 
   return NextResponse.next();
