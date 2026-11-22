@@ -1,6 +1,7 @@
 import "server-only";
 import type { PrismaClient, Question } from "@prisma/client";
 import { shuffle } from "@/lib/quiz/shuffle";
+import prisma from "@/lib/prisma";
 
 export interface CreateQuestionData {
   text: string;
@@ -72,4 +73,9 @@ export class QuestionService {
       where: Object.keys(where).length > 0 ? where : undefined,
     });
   }
+
+  async findAll() {
+    return this.prisma.question.findMany({ orderBy: { createdAt: "desc" } });
+  }
 }
+export const questionService = new QuestionService(prisma);
