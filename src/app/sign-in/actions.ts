@@ -21,7 +21,7 @@ export type ParseSignInResult =
   | { success: true; email: string; password: string; callbackUrl: string }
   | { success: false; fieldErrors: NonNullable<SignInState["fieldErrors"]> };
 
-export function parseSignInForm(formData: FormData): ParseSignInResult {
+export async function parseSignInForm(formData: FormData): Promise<ParseSignInResult> {
   const raw = {
     email: formData.get("email"),
     password: formData.get("password"),
@@ -51,7 +51,7 @@ export async function signInAction(
   _prevState: SignInState | undefined,
   formData: FormData,
 ): Promise<SignInState> {
-  const parsed = parseSignInForm(formData);
+  const parsed = await parseSignInForm(formData);
   if (!parsed.success) {
     return { fieldErrors: parsed.fieldErrors };
   }

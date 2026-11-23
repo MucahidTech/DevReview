@@ -27,24 +27,26 @@ const makeFormData = (data: Record<string, string>): FormData => {
 };
 
 describe("parseSignInForm (pure)", () => {
-  it("rejects an invalid email", () => {
-    const result = parseSignInForm(makeFormData({ email: "not-an-email", password: "12345678" }));
+  it("rejects an invalid email", async () => {
+    const result = await parseSignInForm(
+      makeFormData({ email: "not-an-email", password: "12345678" }),
+    );
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.fieldErrors.email).toBeDefined();
     }
   });
 
-  it("rejects a short password", () => {
-    const result = parseSignInForm(makeFormData({ email: "a@b.com", password: "short" }));
+  it("rejects a short password", async () => {
+    const result = await parseSignInForm(makeFormData({ email: "a@b.com", password: "short" }));
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.fieldErrors.password).toBeDefined();
     }
   });
 
-  it("rejects missing fields", () => {
-    const result = parseSignInForm(makeFormData({}));
+  it("rejects missing fields", async () => {
+    const result = await parseSignInForm(makeFormData({}));
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.fieldErrors.email).toBeDefined();
@@ -52,8 +54,10 @@ describe("parseSignInForm (pure)", () => {
     }
   });
 
-  it("returns the parsed values with the default callbackUrl", () => {
-    const result = parseSignInForm(makeFormData({ email: "a@b.com", password: "password123" }));
+  it("returns the parsed values with the default callbackUrl", async () => {
+    const result = await parseSignInForm(
+      makeFormData({ email: "a@b.com", password: "password123" }),
+    );
     expect(result).toEqual({
       success: true,
       email: "a@b.com",
@@ -62,8 +66,8 @@ describe("parseSignInForm (pure)", () => {
     });
   });
 
-  it("uses the provided callbackUrl", () => {
-    const result = parseSignInForm(
+  it("uses the provided callbackUrl", async () => {
+    const result = await parseSignInForm(
       makeFormData({
         email: "a@b.com",
         password: "password123",
